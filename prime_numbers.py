@@ -72,11 +72,21 @@ _initial_prime_list_max = 31622
 _global_sieve = list(_prime_sieve(_initial_prime_list_max))
 _global_sieve_max_size = 100000
 
+def _max_global_sieve():
+    """Internal function returning the highest element in the
+    global sieve.
+    """
+    return _global_sieve[-1]
+
 def _in_global_sieve(n):
     """Internal function returning if the number is in the global
     prime sieve list, without checking any concepts on the number.
     """
-    return n <= _global_sieve[-1]
+    if n <= _max_global_sieve():
+        i = bisect.bisect_left(_global_sieve, n)
+        if i != len(_global_sieve) and _global_sieve[i] == n:
+            return True
+    return False
 
 def _add_to_global_sieve(n):
     """Internal function appending a prime number to the global
@@ -102,6 +112,7 @@ def _opt_prime_sieve(n):
     _check_factorizable_number_concept(n)
     # if the number is already in our list yield its sieve
     if _in_global_sieve(n):
+        # two bisects is better than none
         i = bisect.bisect_left(_global_sieve, n)
         return (it for it in _global_sieve[:i])
     # helper that yields from a generator, appending to the
@@ -128,17 +139,27 @@ def is_prime(number):
     up any computations for the entire module for prime numbers in this
     internal list.
     """
-    # if prime is already in the list, just pick it
+    # already in the global sieve -> prime
     if _in_global_sieve(number):
-        i = bisect.bisect_left(_global_sieve, number)
-        return i != len(_global_sieve) and _global_sieve[i] == number
-    # divide by each known prime
+        return True
+    # divide by each known prime until square root
     limit = int(number ** .5)
     for p in _global_sieve:
-        if p > limit: return True
-        if number % p == 0: return False
+        # iteration is over square root -> prime
+        if p > limit:
+            return True
+        # divisible by prime -> not prime
+        if number % p == 0:
+            return False
     # fall back on trial division if number too big
-    for f in xrange(_initial_prime_list_max, limit, 6):
+    # fix for iteration skipping 2/3 multiples
+    start = _max_global_sieve()
+    if (start + 2) % 3 == 0:
+        if number % start == 0:
+            return False
+        start += 4
+    # trial division with iteration skipping 2/3 multiples
+    for f in xrange(start, limit, 6):
         if number % f == 0 or number % (f + 4) == 0:
             return False
     return True
