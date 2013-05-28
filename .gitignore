@@ -2,3 +2,5 @@
 *.o
 *.txt
 *.pyc
+.coverage
+*.prof

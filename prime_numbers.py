@@ -69,17 +69,49 @@ def checks_factorizable_number(f, type_msg='', value_msg=''):
 
 # Internal prime number list used for faster computations
 _initial_prime_list_max = 31622
-_prime_list = tuple(_prime_sieve(_initial_prime_list_max))
+_global_sieve = list(_prime_sieve(_initial_prime_list_max))
+_global_sieve_max_size = 100000
+
+def _in_global_sieve(n):
+    """Internal function returning if the number is in the global
+    prime sieve list, without checking any concepts on the number.
+    """
+    return n <= _global_sieve[-1]
+
+def _add_to_global_sieve(n):
+    """Internal function appending a prime number to the global
+    sieve, checking that this list is under its maximum size.
+    Simply returns True if the number was actually added, False
+    otherwise. No checking is done on the number's prime property,
+    only the 'factorizable number' concept is checked, along with
+    the fact that the item isn't already in the list.
+    """
+    _check_factorizable_number_concept(n)
+    assert_msg = 'Cannot add %s to the global sieve : already exists' % n
+    assert not _in_global_sieve(n), assert_msg
+    if len(_global_sieve) <= _global_sieve_max_size:
+        _global_sieve.append(n)
+        return True
+    return False
 
 def _opt_prime_sieve(n):
     """Optimized version of the similar function, also
     computing the prime sieve up to n (included).
+    Returns a generator object.
     """
     _check_factorizable_number_concept(n)
-    if n <= _prime_list[-1]:
-        i = bisect.bisect_left(_prime_list, n)
-        return _prime_list[:i]
-    return _prime_sieve(n)
+    # if the number is already in our list yield its sieve
+    if _in_global_sieve(n):
+        i = bisect.bisect_left(_global_sieve, n)
+        return (it for it in _global_sieve[:i])
+    # helper that yields from a generator, appending to the
+    # global prime sieve list if this one doesn't the number
+    def yield_and_append(sieve):
+        for s in sieve:
+            if not _in_global_sieve(s):
+                _add_to_global_sieve(s)
+            yield s
+    return yield_and_append(_prime_sieve(n))
 
 # Default message strings for concept checks
 _type_msg = 'Number argument must be an integer'
@@ -97,12 +129,12 @@ def is_prime(number):
     internal list.
     """
     # if prime is already in the list, just pick it
-    if number <= _prime_list[-1]:
-        i = bisect.bisect_left(_prime_list, number)
-        return i != len(_prime_list) and _prime_list[i] == number
+    if _in_global_sieve(number):
+        i = bisect.bisect_left(_global_sieve, number)
+        return i != len(_global_sieve) and _global_sieve[i] == number
     # divide by each known prime
     limit = int(number ** .5)
-    for p in _prime_list:
+    for p in _global_sieve:
         if p > limit: return True
         if number % p == 0: return False
     # fall back on trial division if number too big
