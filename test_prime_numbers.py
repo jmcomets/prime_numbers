@@ -92,14 +92,5 @@ class TestDecompose(unittest.TestCase):
                     % (number, decomposition, dec)
             self.assertEqual(decomposition, found_dec, msg)
 
-    def test_large_number(self):
-        """Checks that decompose works on a very large number.
-        """
-        large_number = 1000140625
-        factorization = {5:6, 11:2, 23:2}
-        msg = 'decompose failed for large number %s' % large_number
-        dec = prime_numbers.decompose
-        self.assertEqual(dec(large_number), factorization, msg)
-
 if __name__ == '__main__':
     unittest.main()
