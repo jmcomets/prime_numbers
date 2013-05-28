@@ -23,18 +23,26 @@ def _check_factorizable_number_concept(n):
 
 def _prime_sieve(n):
     """Returns a generator object corresponding to the
-    sieve of Eratosthenes up to n.
+    sieve of Eratosthenes up to n (included).
     Help from here: http://stackoverflow.com/a/3035188/1441984
     """
     _check_factorizable_number_concept(n)
     yield 2
+    # fix for including n in the sieve
+    n += 1
+    # shortcut to stay in the 80 columns
     ba = bitarray.bitarray
-    sieve = ba(True for _ in xrange(n))
+    sieve = ba(True for _ in xrange(n/2))
+    # compute the sieves, excluding pair numbers
     for i in xrange(3, int(n**0.5) + 1, 2):
+        if sieve[i/2]:
+            # set multiples of this prime number as non prime
+            s = ba(False for _ in xrange((n - i*i - 1)/(2*i) + 1))
+            sieve[i*i/2::i] = s
+    # return all the sieves
+    for i in xrange(1, n/2):
         if sieve[i]:
-            yield i
-            gen = (False for _ in xrange((n - i*i - 1) / (2*i) + 1))
-            sieve[i*i::2*i] = ba(gen)
+            yield 2*i + 1
 
 def checks_factorizable_number(f, type_msg='', value_msg=''):
     """Decorator provided to check the type/value of the sole input
@@ -64,13 +72,13 @@ _initial_prime_list_max = 31622
 _prime_list = tuple(_prime_sieve(_initial_prime_list_max))
 
 def _opt_prime_sieve(n):
-    """Returns a generator object corresponding to the
-    sieve of Eratosthenes up to n. Optimized version of
-    the similar function.
-    TODO: implement this method
+    """Optimized version of the similar function, also
+    computing the prime sieve up to n (included).
     """
     _check_factorizable_number_concept(n)
-    # TODO
+    if n <= _prime_sieve[-1]:
+        i = bisect.bisect_left(_prime_list, number)
+        return _prime_list[:i]
     return _prime_sieve(n)
 
 # Default message strings for concept checks
