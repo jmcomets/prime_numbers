@@ -58,5 +58,39 @@ class TestIsPrime(unittest.TestCase):
         ip = prime_numbers.is_prime
         self.assertTrue(ip(large_prime), msg)
 
+class TextDecompose(unittest.TestCase):
+    """TestCase for the decompose() function in the prime_numbers module.
+    """
+    def test_concepts(self):
+        """Checks the edge cases due to bad input.
+        """
+        dec = prime_numbers.decompose
+        self.assertRaises(TypeError, dec, 0.09)
+        self.assertRaises(TypeError, dec, 6.90)
+        self.assertRaises(TypeError, dec, '4.2')
+        self.assertRaises(ValueError, dec, -42)
+        self.assertRaises(ValueError, dec, 0)
+        self.assertRaises(ValueError, dec, 1)
+
+    def test_state_invariance(self):
+        """Checks that the output doesn't depend on the state.
+        """
+        n = 1236
+        msg = 'decompose failed state invariance test for input %s' % n
+        dec = prime_numbers.decompose
+        self.assertEqual(dec(n), dec(n), msg)
+
+    def test_basic_numbers(self):
+        """Checks some basic number decompositions.
+        """
+        dec = prime_numbers.decompose
+        cases = {42: {2: 1, 3: 1, 7: 1}, 99: {3: 2, 11: 1,},
+                1337: {7: 1, 191: 1}, 12456 : {2: 3, 3: 2, 173: 1}}
+        for number, decomposition in cases.iteritems():
+            found_dec = dec(number)
+            msg = 'decompose failed for number %s : %s != %s' \
+                    % (number, decomposition, dec)
+            self.assertEqual(decomposition, found_dec, msg)
+
 if __name__ == '__main__':
     unittest.main()

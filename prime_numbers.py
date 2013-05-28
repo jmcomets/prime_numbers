@@ -76,8 +76,8 @@ def _opt_prime_sieve(n):
     computing the prime sieve up to n (included).
     """
     _check_factorizable_number_concept(n)
-    if n <= _prime_sieve[-1]:
-        i = bisect.bisect_left(_prime_list, number)
+    if n <= _prime_list[-1]:
+        i = bisect.bisect_left(_prime_list, n)
         return _prime_list[:i]
     return _prime_sieve(n)
 
