@@ -68,9 +68,12 @@ def checks_factorizable_number(f, type_msg='', value_msg=''):
     return closure
 
 # Internal prime number list used for faster computations
-_initial_prime_list_max = 31622
+_initial_prime_list_max = 1000000
 _global_sieve = list(_prime_sieve(_initial_prime_list_max))
-_global_sieve_max_size = 100000
+_global_sieve_max_size = 1000000
+# Startup check so _initial_prime_list_max and _global_sieve_max_size
+# work well together (since they are fixed at runtime)
+assert len(_global_sieve) < _global_sieve_max_size
 
 def _max_global_sieve():
     """Internal function returning the highest element in the
@@ -99,7 +102,7 @@ def _add_to_global_sieve(n):
     _check_factorizable_number_concept(n)
     assert_msg = 'Cannot add %s to the global sieve : already exists' % n
     assert not _in_global_sieve(n), assert_msg
-    if len(_global_sieve) <= _global_sieve_max_size:
+    if len(_global_sieve) < _global_sieve_max_size:
         _global_sieve.append(n)
         return True
     return False
