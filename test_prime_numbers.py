@@ -53,7 +53,10 @@ class TestIsPrime(unittest.TestCase):
     def test_large_prime(self):
         """Checks that is_prime works on a very large prime number.
         """
-        pass # TODO
+        large_prime = 87178291199
+        msg = 'is_prime failed for large prime number %s' % large_prime
+        ip = prime_numbers.is_prime
+        self.assertTrue(ip(large_prime), msg)
 
 if __name__ == '__main__':
     unittest.main()
