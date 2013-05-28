@@ -58,7 +58,7 @@ class TestIsPrime(unittest.TestCase):
         ip = prime_numbers.is_prime
         self.assertTrue(ip(large_prime), msg)
 
-class TextDecompose(unittest.TestCase):
+class TestDecompose(unittest.TestCase):
     """TestCase for the decompose() function in the prime_numbers module.
     """
     def test_concepts(self):
@@ -91,6 +91,15 @@ class TextDecompose(unittest.TestCase):
             msg = 'decompose failed for number %s : %s != %s' \
                     % (number, decomposition, dec)
             self.assertEqual(decomposition, found_dec, msg)
+
+    def test_large_number(self):
+        """Checks that decompose works on a very large number.
+        """
+        large_number = 1000140625
+        factorization = {5:6, 11:2, 23:2}
+        msg = 'decompose failed for large number %s' % large_number
+        dec = prime_numbers.decompose
+        self.assertEqual(dec(large_number), factorization, msg)
 
 if __name__ == '__main__':
     unittest.main()
