@@ -13,11 +13,20 @@ import bitarray
 import bisect
 import math
 
+def _check_factorizable_number_concept(n):
+    """Checks basic assertions for a factorizable number,
+    used for internal function checks, raising
+    an AssertionError if it fails.
+    """
+    assert isinstance(n, int), 'Number must be an integer'
+    assert n > 1, 'Number must be strictly greater than 1'
+
 def _prime_sieve(n):
     """Returns a generator object corresponding to the
     sieve of Eratosthenes up to n.
     Help from here: http://stackoverflow.com/a/3035188/1441984
     """
+    _check_factorizable_number_concept(n)
     yield 2
     ba = bitarray.bitarray
     sieve = ba(True for _ in xrange(n))
@@ -54,6 +63,16 @@ def checks_factorizable_number(f, type_msg='', value_msg=''):
 _initial_prime_list_max = 31622
 _prime_list = tuple(_prime_sieve(_initial_prime_list_max))
 
+def _opt_prime_sieve(n):
+    """Returns a generator object corresponding to the
+    sieve of Eratosthenes up to n. Optimized version of
+    the similar function.
+    TODO: implement this method
+    """
+    _check_factorizable_number_concept(n)
+    # TODO
+    return _prime_sieve(n)
+
 # Default message strings for concept checks
 _type_msg = 'Number argument must be an integer'
 _value_msg = 'Number argument must be strictly greater than 1'
@@ -70,10 +89,10 @@ def is_prime(number):
     internal list.
     """
     # if prime is already in the list, just pick it
-    if number <= _initial_prime_list_max:
+    if number <= _prime_list[-1]:
         i = bisect.bisect_left(_prime_list, number)
         return i != len(_prime_list) and _prime_list[i] == number
-    # Divide by each known prime
+    # divide by each known prime
     limit = int(number ** .5)
     for p in _prime_list:
         if p > limit: return True
@@ -88,20 +107,24 @@ def _trial_division_decompose(n):
     """Return a list of the prime factors for a natural number.
     Credit here: http://en.wikipedia.org/wiki/Trial_division
     """
-    primes = _prime_sieve(n)
+    _check_factorizable_number_concept(n)
+    # compute the prime sieve up to n
+    primes = _opt_prime_sieve(n)
+    # prime factors are stored in a dictionary { factor -> exponent }
     factors = {}
-
+    # adding function is provided for reuse of following code
     def add_factor(f):
         if f not in factors:
             factors[f] = 0
         factors[f] += 1
-
+    # actual algorithm try to divide n by each prime
     for p in primes:
         if p*p > n:
             break
         while n % p == 0:
             add_factor(p)
             n //= p
+    # special case, n is a prime
     if n > 1:
         add_factor(n)
     return factors
