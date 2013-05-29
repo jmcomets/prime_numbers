@@ -8,10 +8,9 @@ number computations, for example checking if a number is prime,
 getting its prime number decomposition, etc...
 """
 
-from functools import wraps, partial
-import bitarray
-import bisect
-import math
+import functools as _ft
+from bitarray import bitarray as _ba
+from bisect import bisect_left as _bl
 
 def _check_factorizable_number_concept(n):
     """Checks basic assertions for a factorizable number,
@@ -31,13 +30,12 @@ def _prime_sieve(n):
     # fix for including n in the sieve
     n += 1
     # shortcut to stay in the 80 columns
-    ba = bitarray.bitarray
-    sieve = ba(True for _ in xrange(n/2))
+    sieve = _ba(True for _ in xrange(n/2))
     # compute the sieves, excluding pair numbers
     for i in xrange(3, int(n**0.5) + 1, 2):
         if sieve[i/2]:
             # set multiples of this prime number as non prime
-            s = ba(False for _ in xrange((n - i*i - 1)/(2*i) + 1))
+            s = _ba(False for _ in xrange((n - i*i - 1)/(2*i) + 1))
             sieve[i*i/2::i] = s
     # return all the sieves
     for i in xrange(1, n/2):
@@ -54,7 +52,7 @@ def checks_factorizable_number(f, type_msg='', value_msg=''):
     The messages respectively for the TypeError/ValueError exceptions
     are the optional arguments type_msg/value_msg.
     """
-    @wraps(f)
+    @_ft.wraps(f)
     def closure(number):
         try:
             n = int(number)
@@ -86,7 +84,7 @@ def _in_global_sieve(n):
     prime sieve list, without checking any concepts on the number.
     """
     if n <= _max_global_sieve():
-        i = bisect.bisect_left(_global_sieve, n)
+        i = _bl(_global_sieve, n)
         if i != len(_global_sieve) and _global_sieve[i] == n:
             return True
     return False
@@ -116,7 +114,7 @@ def _opt_prime_sieve(n):
     # if the number is already in our list yield its sieve
     if _in_global_sieve(n):
         # two bisects is better than none
-        i = bisect.bisect_left(_global_sieve, n)
+        i = _bl(_global_sieve, n)
         return (it for it in _global_sieve[:i])
     # helper that yields from a generator, appending to the
     # global prime sieve list if this one doesn't the number
@@ -132,7 +130,7 @@ _type_msg = 'Number argument must be an integer'
 _value_msg = 'Number argument must be strictly greater than 1'
 
 # Internal decorator for concept checks
-_checks_factorizable_number = partial(checks_factorizable_number,
+_checks_factorizable_number = _ft.partial(checks_factorizable_number,
         type_msg=_type_msg, value_msg=_value_msg)
 
 @_checks_factorizable_number
