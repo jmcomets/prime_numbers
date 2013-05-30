@@ -20,17 +20,16 @@ def _check_factorizable_number_concept(n):
     assert isinstance(n, int), 'Number must be an integer'
     assert n > 1, 'Number must be strictly greater than 1'
 
-def _prime_sieve(n):
+def _prime_sieve(n, use_np=False):
     """Returns a generator object corresponding to the
     sieve of Eratosthenes up to n (included).
-    Help from here: http://stackoverflow.com/a/3035188/1441984
     """
     _check_factorizable_number_concept(n)
     yield 2
     # fix including n in the sieve
     n += 1
     # on startup, no numbers are marked til n
-    sieve = _np.zeros(n/2)
+    sieve = _np.zeros(n/2) if use_np else [0] * (n/2)
     # compute the sieves, excluding pair numbers
     for i in xrange(3, int(n**0.5) + 1, 2):
         if sieve[i/2] == 0:
@@ -63,11 +62,17 @@ def checks_factorizable_number(f, type_msg='', value_msg=''):
         return f(n)
     return closure
 
+def _make_global_sieve(n):
+    """Internal function called on module import, returning
+    a prime sieve list up to n (included).
+    """
+    return list(_prime_sieve(n))
+
 # Internal prime number list used for faster computations
-_initial_prime_list_max = 1000000
-_global_sieve = list(_prime_sieve(_initial_prime_list_max))
+_global_sieve_initial_max = 1000000
+_global_sieve = _make_global_sieve(_global_sieve_initial_max)
 _global_sieve_max_size = 1000000
-# Startup check so _initial_prime_list_max and _global_sieve_max_size
+# Startup check so _global_sieve_initial_max and _global_sieve_max_size
 # work well together (since they are fixed at runtime)
 assert len(_global_sieve) < _global_sieve_max_size
 
@@ -109,19 +114,25 @@ def _opt_prime_sieve(n):
     Returns a generator object.
     """
     _check_factorizable_number_concept(n)
-    # if the number is already in our list yield its sieve
-    if _in_global_sieve(n):
-        # two bisects is better than none
-        i = _bl(_global_sieve, n)
-        return (it for it in _global_sieve[:i])
-    # helper that yields from a generator, appending to the
+    # helper that returns a generator, appending to the
     # global prime sieve list if this one doesn't the number
     def yield_and_append(sieve):
         for s in sieve:
             if not _in_global_sieve(s):
                 _add_to_global_sieve(s)
             yield s
-    return yield_and_append(_prime_sieve(n))
+    # helper that returns a generator of prime numbers up to
+    # the given number (included)
+    def yield_til_number(number):
+        for p in _global_sieve:
+            yield p
+            if p >= number:
+                break
+    # if the number is already in our list yield its sieve
+    if _in_global_sieve(n):
+        return yield_til_number(n + 1)
+    else:
+        return yield_and_append(_prime_sieve(n))
 
 # Default message strings for concept checks
 _type_msg = 'Number argument must be an integer'
