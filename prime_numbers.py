@@ -8,8 +8,8 @@ number computations, for example checking if a number is prime,
 getting its prime number decomposition, etc...
 """
 
-import functools as _ft
 import numpy as _np
+import functools as _ft
 from bisect import bisect_left as _bl
 
 def _check_factorizable_number_concept(n):
@@ -23,6 +23,8 @@ def _check_factorizable_number_concept(n):
 def _prime_sieve(n, use_np=False):
     """Returns a generator object corresponding to the
     sieve of Eratosthenes up to n (included).
+    Takes an optional argument telling wether to use numpy
+    arrays or not (default=False).
     """
     _check_factorizable_number_concept(n)
     yield 2
@@ -130,9 +132,10 @@ def _opt_prime_sieve(n):
                 break
     # if the number is already in our list yield its sieve
     if _in_global_sieve(n):
-        return yield_til_number(n + 1)
-    else:
-        return yield_and_append(_prime_sieve(n))
+        return yield_til_number(n)
+    # otherwise generate a new sieve and append the overflowing
+    # values to the global sieve
+    return yield_and_append(_prime_sieve(n))
 
 # Default message strings for concept checks
 _type_msg = 'Number argument must be an integer'
