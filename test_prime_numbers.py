@@ -89,7 +89,7 @@ class TestDecompose(unittest.TestCase):
         for number, decomposition in cases.iteritems():
             found_dec = dec(number)
             msg = 'decompose failed for number %s : %s != %s' \
-                    % (number, decomposition, dec)
+                    % (number, decomposition, found_dec)
             self.assertEqual(decomposition, found_dec, msg)
 
 if __name__ == '__main__':
