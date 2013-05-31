@@ -30,16 +30,17 @@ def _prime_sieve(n, use_np=False):
     yield 2
     # fix including n in the sieve
     n += 1
-    # on startup, no numbers are marked til n
-    sieve = _np.zeros(n/2) if use_np else [0] * (n/2)
-    # compute the sieves, excluding pair numbers
+    # generate the sieve, excluding pair numbers,
+    # which gives us a half-sieve to begin with
+    marked = _np.zeros(n/2) if use_np else [0] * (n/2)
     for i in xrange(3, int(n**0.5) + 1, 2):
-        if sieve[i/2] == 0:
-            # yeild this prime number
+        if marked[i/2] == 0:
+            # if the current index isn't marked
+            #  - yield it
+            #  - mark its multiples
             yield i
-            # set multiples of this prime number as non prime
             for j in xrange(int(1.5*i), n/2, i):
-                sieve[j] = 1
+                marked[j] = 1
 
 def checks_factorizable_number(f, type_msg='', value_msg=''):
     """Decorator provided to check the type/value of the sole input
